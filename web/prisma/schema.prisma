@@ -73,6 +73,7 @@ model Comment {
   body    String
   author  User     @relation(fields: [authorId], references: [id])
   authorId String
+  isReply Boolean  @default(false)
   replies Comment[] @relation("CommentToComment")
   parent  Comment? @relation("CommentToComment", fields: [parentId], references: [id])
   parentId String?

@@ -1,12 +1,16 @@
+'use client'
 import clsx from 'clsx';
 import Image from 'next/image';
+import { api } from '~/utils/api';
+import { useState } from 'react';
 
 interface Comment {
+  id: string;
   body: string;
-  authorName: string;
-  authorAvatar: string;
-  createdAt: string;
+  authorId: string;
+  createdAt: Date;
   rating: number;
+  isReply: boolean;
 }
 
 interface CommentProps {
@@ -16,23 +20,32 @@ interface CommentProps {
 }
 
 const Comment = ({ className, children, comment }: CommentProps) => { 
-  const rootClassName = clsx(className, 'flex flex-col space-y-2 p-2 border border-slate-800 rounded-md');
+  const rootClassName = clsx(className, 'flex flex-col space-y-2 p-2 border border-slate-800 rounded-md my-2 w-full');
+  const { id, body, createdAt, rating, authorId } = comment;
+  const { data: author } = api.comments.getAuthor.useQuery(authorId);
 
-  const { body, authorName, authorAvatar, createdAt, rating } = comment;
+  const createComment = api.comments.createComment.useMutation();
 
   return (
     <div className={rootClassName}>
-      <div className="flex space-x-2">
-        <div className="w-8 h-8 rounded-full overflow-hidden">
-         <Image src={authorAvatar} alt={authorName} width={32} height={32} /> 
-        </div>
-        <div className="flex flex-col space-y-1">
-          <div className="flex items-center space-x-1">
-            <span className="text-sm font-semibold">{authorName}</span>
-            <span className="text-xs text-gray-500">{createdAt}</span>
+      <div className="flex space-x-20 w-full ">
+        <div className="flex space-x-20">
+          <div className="flex flex-col items-center">
+            <button className="text-sm"><Image src={"/arrow-up.svg"} alt="up" width={30} height={30} /></button>
+            <p>{rating}</p>
+            <button className="text-sm"><Image src={"/arrow-down.svg"} alt="up" width={30} height={30} /></button>
           </div>
-          <p className="text-sm">{body}</p>
-          <p>{rating}</p>
+          <div className="flex flex-col">
+          <div className="flex items-center mx-2">
+            <Image src={author?.image} width={20} height={20} className="rounded-full" />
+            <span className="text-xs text-gray-500 mx-1">{author?.name}</span>
+            <span className="text-xs text-gray-500 mx-1">{createdAt.toLocaleDateString()}</span>
+          </div>
+            <p className="text-sm">{body}</p>
+          </div>
+        </div>
+        <div className="flex w-full justify-end">
+        <button className="text-sm px-4 mx-4">Reply</button>
         </div>
       </div>
       {children}
