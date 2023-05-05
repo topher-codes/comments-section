@@ -11,6 +11,7 @@ interface Comment {
   createdAt: Date;
   rating: number;
   isReply: boolean;
+  parentId: string;
 }
 
 interface CommentProps {
@@ -21,10 +22,26 @@ interface CommentProps {
 
 const Comment = ({ className, children, comment }: CommentProps) => { 
   const rootClassName = clsx(className, 'flex flex-col space-y-2 p-2 border border-slate-800 rounded-md my-2 w-full');
-  const { id, body, createdAt, rating, authorId } = comment;
+  const { body, createdAt, rating, authorId, isReply, parentId } = comment;
   const { data: author } = api.comments.getAuthor.useQuery(authorId);
+  let id = comment.id;
 
   const createComment = api.comments.createComment.useMutation();
+
+  if (isReply) {
+    id = parentId
+    }
+
+  const postReply = (parentId: string) => () => {
+    createComment.mutate({
+      comment: {
+        body: "This is a reply",
+        authorId: author?.id,
+        parentId: parentId,
+        isReply: true,
+      },
+    });
+  };
 
   return (
     <div className={rootClassName}>
@@ -37,7 +54,7 @@ const Comment = ({ className, children, comment }: CommentProps) => {
           </div>
           <div className="flex flex-col">
           <div className="flex items-center mx-2">
-            <Image src={author?.image} width={20} height={20} className="rounded-full" />
+            <Image src={author?.image} width={20} alt="img" height={20} className="rounded-full" />
             <span className="text-xs text-gray-500 mx-1">{author?.name}</span>
             <span className="text-xs text-gray-500 mx-1">{createdAt.toLocaleDateString()}</span>
           </div>
@@ -45,7 +62,7 @@ const Comment = ({ className, children, comment }: CommentProps) => {
           </div>
         </div>
         <div className="flex w-full justify-end">
-        <button className="text-sm px-4 mx-4">Reply</button>
+        <button className="text-sm px-4 mx-4" onClick={postReply(id)}>Reply</button>
         </div>
       </div>
       {children}

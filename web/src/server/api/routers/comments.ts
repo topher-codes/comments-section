@@ -25,14 +25,20 @@ export const commentsRouter = createTRPCRouter({
         data: {
           body: input.comment.body,
           authorId: input.comment.authorId,
+          parentId: input.comment.parentId,
+          isReply: input.comment.isReply,
         },
       })
     }),
 
     getComments: publicProcedure
     .query(({ ctx }) => {
-      return ctx.prisma.comment.findMany()
-    }),
+      return ctx.prisma.comment.findMany({
+        include: {
+          replies: true,
+        },
+    })
+  }),
 
     getAuthor: publicProcedure
     .input(z.string())

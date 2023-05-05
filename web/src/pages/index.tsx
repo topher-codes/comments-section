@@ -42,7 +42,12 @@ const Home: NextPage = () => {
         <button className="border border-black px-4 mx-4" onClick={() => postComment()}>Post Comment</button>
       </div>
         {getComments.data?.map((comment) => (
-          <Comment key={comment.id} comment={comment} className="w-full" />
+          !comment.isReply &&
+          <Comment key={comment.id} comment={comment} className="w-full" >
+            {comment.replies?.map((reply) => (
+              <Comment key={reply.id} comment={reply} className="w-full" />
+            ))}
+          </Comment>
         ))}
 
 
