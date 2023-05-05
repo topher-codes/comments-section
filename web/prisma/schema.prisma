@@ -76,6 +76,7 @@ model Comment {
   replies Comment[] @relation("CommentToComment")
   parent  Comment? @relation("CommentToComment", fields: [parentId], references: [id])
   parentId String?
+  rating  Int     @default(0)
 }
 
 
