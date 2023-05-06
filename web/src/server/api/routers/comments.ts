@@ -36,9 +36,27 @@ export const commentsRouter = createTRPCRouter({
       return ctx.prisma.comment.findMany({
         include: {
           replies: true,
+          votes: true,
         },
     })
   }),
+    
+    voteComment: publicProcedure
+    .input(z.object({
+      commentId: z.string(),
+      authorId: z.string(),
+      type: z.string(),
+    }))
+    .mutation(({ ctx, input }) => {
+      return ctx.prisma.vote.create({
+        data: {
+          commentId: input.commentId,
+          authorId: input.authorId,
+          type: input.type,
+        },
+      })
+    }),
+
 
     getAuthor: publicProcedure
     .input(z.string())
