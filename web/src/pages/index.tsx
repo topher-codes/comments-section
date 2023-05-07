@@ -1,8 +1,10 @@
 import { type NextPage } from "next";
 import Head from "next/head";
-import Comment from "~/components/Comment";
+import CommentContainer from "~/components/Comment";
 import { api } from "~/utils/api";
 import { useSession, signIn, signOut } from "next-auth/react";
+import type { Comment } from "@prisma/client";
+
 
 const Home: NextPage = () => {
   // Grab the session data from next-auth
@@ -10,6 +12,10 @@ const Home: NextPage = () => {
 
   // Grab the trpc query that fetches all of the comments (includes replies)
   const getComments = api.comments.getComments.useQuery();
+
+  // Store the result of getComments in an array of comments
+  // We will be adding to this with some ai responses later
+  const comments: Comment[] = getComments.data || [];
   
 
   return (
@@ -35,13 +41,13 @@ const Home: NextPage = () => {
       </div>
 
         {/* Loop through the comments and render them. If the comment contains replies, render those as children */}
-        {getComments.data?.map((comment) => (
+        {comments.map((comment) => (
           !comment.isReply &&
-          <Comment key={comment.id} comment={comment} className="w-full" >
+          <CommentContainer key={comment.id} comment={comment} >
             {comment.replies?.map((reply) => (
-              <Comment key={reply.id} comment={reply} className="w-full" />
+            <CommentContainer key={reply.id} comment={reply} />
             ))}
-          </Comment>
+          </CommentContainer>
         ))}
         {/* */}
 

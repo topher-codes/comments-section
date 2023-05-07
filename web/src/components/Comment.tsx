@@ -33,12 +33,14 @@ const Comment = ({ className, children, comment }: CommentProps) => {
   const { data: author } = api.comments.getAuthor.useQuery(authorId);
   const { data: session } = useSession();
 
+  //Some state variables to handle the editing and replying of comments
   const [typing, setTyping] = useState(false);
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState<string>(body);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Some mutations to handle the voting, deleting and editing of comments
   const vote = api.comments.voteComment.useMutation();
   const deleteComment = api.comments.deleteComment.useMutation();
   const editComment = api.comments.updateComment.useMutation();
