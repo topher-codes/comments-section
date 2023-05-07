@@ -25,21 +25,20 @@ interface CommentProps {
 const Comment = ({ className, children, comment }: CommentProps) => { 
   const router = useRouter();
   const rootClassName = clsx(className, 'flex flex-col space-y-2 p-2 border border-slate-800 rounded-md my-2 w-full');
-  const { votes, body, createdAt, authorId, isReply, parentId } = comment;
+  const { votes, body, createdAt, authorId, isReply, id } = comment;
   const { data: author } = api.comments.getAuthor.useQuery(authorId);
-  let id = comment.id;
 
   const createComment = api.comments.createComment.useMutation();
   const vote = api.comments.voteComment.useMutation();
   
   // Define the rating of the comment. The rating is the number of upvotes minus the number of downvotes.
-  let rating = 0;
+  const rating = { rating: 0 };
   if (votes) {
     votes.forEach((vote: any) => {
       if (vote.type === "up") {
-        rating += 1;
+        rating.rating += 1;
       } else {
-      rating -= 1;
+        rating.rating -= 1;
       }
     })
   }
@@ -72,11 +71,9 @@ const Comment = ({ className, children, comment }: CommentProps) => {
 
     router.reload();
   }
-  
-  if (isReply) { 
-    id = parentId;
-  }
 
+
+  
 
   // Create a reply comment. If the current comment is at the top level (doesn't have a parent), then the reply
   // comment will have the current comment as its parent. If the current comment is a reply, then the reply comment
@@ -94,18 +91,14 @@ const Comment = ({ className, children, comment }: CommentProps) => {
     router.reload();
   };
 
-  // TODO: add upvote / downvote logic
-
-
-
   return (
     <div className={rootClassName}>
       <div className="flex space-x-20 w-full ">
         <div className="flex space-x-20">
           <div className="flex flex-col items-center">
-            <button className="text-sm" onClick={upvote(comment.id)}><Image src={"/arrow-up.svg"} alt="up" width={30} height={30} /></button>
-            <p>{rating}</p>
-            <button className="text-sm" onClick={downvote(comment.id)}><Image src={"/arrow-down.svg"} alt="up" width={30} height={30} /></button>
+            <button className="text-sm" onClick={upvote(id)}><Image src={"/arrow-up.svg"} alt="up" width={30} height={30} /></button>
+            <p>{rating.rating}</p>
+            <button className="text-sm" onClick={downvote(id)}><Image src={"/arrow-down.svg"} alt="up" width={30} height={30} /></button>
           </div>
           <div className="flex flex-col">
           <div className="flex items-center mx-2">

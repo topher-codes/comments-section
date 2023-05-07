@@ -7,6 +7,7 @@ import { useSession, signIn, signOut } from "next-auth/react";
 const Home: NextPage = () => {
   const { data: session } = useSession();
 
+  
 
   //TODO : move this to a component
   const createComment = api.comments.createComment.useMutation();
@@ -19,10 +20,9 @@ const Home: NextPage = () => {
     });
   };
 
+
   const getComments = api.comments.getComments.useQuery();
   
-
-
 
   return (
     <>
