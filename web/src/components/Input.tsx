@@ -13,20 +13,24 @@ interface InputProps {
 
 const Input = ({ className, isReply, parentId }: InputProps) => {
   const rootClassName = clsx(className, 'flex space-y-2 p-4 border border-slate-800 rounded-md my-2 w-full items-center justify-between');
+  // Grab the session data. We will use this to get the authorId of the comment.
   const { data: session } = useSession();
   const [value, setValue] = useState<string>('');
   const inputRef = useRef<HTMLInputElement>(null);
+  // Grab the router so we can reload the page after the comment is created.
   const router = useRouter();
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setValue(e.target.value);
   };
 
+  // Focus on the input when the component is mounted
   useEffect(() => {
     if (inputRef.current) {
       inputRef.current.focus();
     }
   }, []);
 
+  // Create the comment
   const createComment = api.comments.createComment.useMutation();
   const sendComment = () => {
     if (value.length === 0) {
@@ -35,7 +39,7 @@ const Input = ({ className, isReply, parentId }: InputProps) => {
     createComment.mutate({
       comment: {
         body: value,
-        authorId: session?.user?.id,
+        authorId: session?.user?.id as string,
         isReply: isReply,
         parentId: parentId,
       }

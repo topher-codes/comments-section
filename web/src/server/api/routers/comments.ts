@@ -14,7 +14,7 @@ export const commentsRouter = createTRPCRouter({
   createComment: publicProcedure
     .input(z.object({
       comment: z.object({
-        body: z.string(),
+        body: z.string().max(150),
         authorId: z.string(),
         parentId: z.string().optional(),
         isReply: z.boolean().optional(),
@@ -37,7 +37,7 @@ export const commentsRouter = createTRPCRouter({
     .input(z.object({
       comment: z.object({
         id: z.string(),
-        body: z.string(),
+        body: z.string().max(150),
       }),
     }))
     .mutation(({ ctx, input }) => {

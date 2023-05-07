@@ -1,28 +1,14 @@
 import { type NextPage } from "next";
 import Head from "next/head";
 import Comment from "~/components/Comment";
-import Input from "~/components/Input";
 import { api } from "~/utils/api";
 import { useSession, signIn, signOut } from "next-auth/react";
 
 const Home: NextPage = () => {
+  // Grab the session data from next-auth
   const { data: session } = useSession();
 
-  
-
-  //TODO : move this to a component
-  const createComment = api.comments.createComment.useMutation();
-  //const postComment = () => {
-  //  createComment.mutate({
-  //    comment: {
-  //      body: "This is a comment",
-  //      authorId: session?.user?.id || "",
-  //    },
-  //  });
-  //};
-  //
-
-
+  // Grab the trpc query that fetches all of the comments (includes replies)
   const getComments = api.comments.getComments.useQuery();
   
 
@@ -33,19 +19,22 @@ const Home: NextPage = () => {
         <meta name="description" content="Created by topher-codes" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
+
+
       <main className="flex flex-col min-h-screen mx-20  items-center justify-center" >
       <div className="flex my-2 p-4">
         <h1>Comments Section</h1>
+
+        {/* If the user is signed in, show the sign out button. Otherwise, show the sign in button. */}
         {session ? (
           <button className="border border-black px-4 mx-4" onClick={() => signOut()}>Sign Out</button>
         ) : (
           <button className="border border-black px-4 mx-4" onClick={() => signIn()}>Sign In</button>
         )}
-        <div className="flex flex-col">
-          <Input className="w-full" />
-          <button className="border border-black px-4 mx-4" onClick={() => postComment()}>Post Comment</button>
-        </div>
+        {/* */}
       </div>
+
+        {/* Loop through the comments and render them. If the comment contains replies, render those as children */}
         {getComments.data?.map((comment) => (
           !comment.isReply &&
           <Comment key={comment.id} comment={comment} className="w-full" >
@@ -54,6 +43,7 @@ const Home: NextPage = () => {
             ))}
           </Comment>
         ))}
+        {/* */}
 
 
       </main>

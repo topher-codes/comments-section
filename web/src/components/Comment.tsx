@@ -6,16 +6,17 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useSession } from 'next-auth/react';
 import Input from './Input';
+import type { Vote } from '@prisma/client';
 
 interface Comment {
   id: string;
   body: string;
   authorId: string;
   createdAt: Date;
-  rating: number;
   isReply: boolean;
-  parentId: string;
-  votes: [];
+  parentId: string | null;
+  votes: Vote[];
+  replies: Comment[];
 }
 
 interface CommentProps {
@@ -27,8 +28,8 @@ interface CommentProps {
 const Comment = ({ className, children, comment }: CommentProps) => { 
   const router = useRouter();
   const rootClassName = clsx(className, 'flex flex-col space-y-2 p-2 border border-slate-800 rounded-md my-2 w-full');
-  const { votes, body, createdAt, authorId, isReply } = comment;
-  let { id, parentId } = comment;
+  const { votes, body, createdAt, authorId, isReply, parentId } = comment;
+  let { id } = comment;
   const { data: author } = api.comments.getAuthor.useQuery(authorId);
   const { data: session } = useSession();
 
@@ -41,11 +42,12 @@ const Comment = ({ className, children, comment }: CommentProps) => {
   const vote = api.comments.voteComment.useMutation();
   const deleteComment = api.comments.deleteComment.useMutation();
   const editComment = api.comments.updateComment.useMutation();
+
   
   // Define the rating of the comment. The rating is the number of upvotes minus the number of downvotes.
   const rating = { rating: 0 };
   if (votes) {
-    votes.forEach((vote: any) => {
+    votes.forEach((vote: Vote) => {
       if (vote.type === "up") {
         rating.rating += 1;
       } else {
@@ -54,15 +56,15 @@ const Comment = ({ className, children, comment }: CommentProps) => {
     })
   }
 
-
+  //VOTES BEGIN
   // Handle the upvote and downvote
   const upvote = (commentId: string) => () => {
-    if (votes?.some((vote: any) => vote.authorId === author?.id)) {
+    if (votes?.some((vote: Vote) => vote.authorId === author?.id)) {
       return;
     }
     vote.mutate({
       commentId: commentId,
-      authorId: author?.id,
+      authorId: author?.id as string,
       type: "up",
     });
 
@@ -71,27 +73,31 @@ const Comment = ({ className, children, comment }: CommentProps) => {
   }
 
   const downvote = (commentId: string) => () => {
-    if (votes?.some((vote: any) => vote.authorId === author?.id)) {
+    if (votes?.some((vote: Vote) => vote.authorId === author?.id)) {
       return;
     }
     vote.mutate({
       commentId: commentId,
-      authorId: author?.id,
+      authorId: author?.id as string,
       type: "down",
     });
 
     router.reload();
   }
+  // VOTES END
 
   // Function "reply" simply toggles the typing state. 
   const reply = () => {
     setTyping(!typing);
   }
 
+  // If the comment is a reply, the id is the parentId. This will be used to create a reply to the comment
   if (isReply) {
-    id = parentId;
+    id = parentId as string;
   }
 
+  // Handle the delete and edit of the comment
+  // Refresh the page after the comment is deleted or edited
   const deleteTheComment = (id: string) => {
     deleteComment.mutate({
       id: id,
@@ -110,6 +116,7 @@ const Comment = ({ className, children, comment }: CommentProps) => {
     router.reload();
   }
 
+  // If the user is editing the comment, the input will be focused
   useEffect(() => {
     if (editing) {
       inputRef.current?.focus();
@@ -129,10 +136,11 @@ const Comment = ({ className, children, comment }: CommentProps) => {
           </div>
           <div className="flex flex-col w-full ">
           <div className="flex items-center mx-2">
-            <Image src={author?.image} width={20} alt="img" height={20} className="rounded-full" />
+            <Image src={author?.image || ""} width={20} alt="img" height={20} className="rounded-full" />
             <span className="text-sm text-gray-500 mx-1">{author?.name}</span>
             <span className="text-sm text-gray-500 mx-1">{createdAt.toLocaleDateString()}</span>
           </div>
+          {/* If the user is not editing the comment, the comment will be displayed. Otherwise, the input will be displayed */}
           {!editing ? (
             <p>{body}</p>
           ) : (
@@ -141,6 +149,7 @@ const Comment = ({ className, children, comment }: CommentProps) => {
             <button className="text-sm p-2 border border-black rounded-md" onClick={() => editTheComment(comment.id)}>Update</button>
           </div>
           )}
+          {/* */}
           </div>
         </div>
         <div className="flex justify-center">
@@ -157,11 +166,13 @@ const Comment = ({ className, children, comment }: CommentProps) => {
           </div>
         </div>
       </div>
+      {/* If the user is typing, the input will be displayed */}
       {
         typing && (
           <Input className="w-full" isReply={true} parentId={id} /> 
         )
       }
+      {/* */}
       {children}
     </div>
   );
