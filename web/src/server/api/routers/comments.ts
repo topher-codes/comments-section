@@ -31,6 +31,41 @@ export const commentsRouter = createTRPCRouter({
       })
     }),
 
+    // updateComment takes a comment (found in prisma schema) and updates the database
+    // with the new comment. It returns the comment that was updated.
+    updateComment: publicProcedure
+    .input(z.object({
+      comment: z.object({
+        id: z.string(),
+        body: z.string(),
+      }),
+    }))
+    .mutation(({ ctx, input }) => {
+      return ctx.prisma.comment.update({
+        where: {
+          id: input.comment.id,
+        },
+        data: {
+          body: input.comment.body,
+        },
+      })
+    }),
+
+
+    // deleteComment takes a comment (found in prisma schema) and deletes the comment from the database.
+    // It returns the comment that was deleted.
+    deleteComment: publicProcedure
+    .input(z.object({
+      id: z.string(),
+    }))
+    .mutation(({ ctx, input }) => {
+      return ctx.prisma.comment.delete({
+        where: {
+          id: input.id,
+        },
+      })
+    }),
+
     getComments: publicProcedure
     .query(({ ctx }) => {
       return ctx.prisma.comment.findMany({

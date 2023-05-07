@@ -1,6 +1,7 @@
 import { type NextPage } from "next";
 import Head from "next/head";
 import Comment from "~/components/Comment";
+import Input from "~/components/Input";
 import { api } from "~/utils/api";
 import { useSession, signIn, signOut } from "next-auth/react";
 
@@ -11,14 +12,15 @@ const Home: NextPage = () => {
 
   //TODO : move this to a component
   const createComment = api.comments.createComment.useMutation();
-  const postComment = () => {
-    createComment.mutate({
-      comment: {
-        body: "This is a comment",
-        authorId: session?.user?.id || "",
-      },
-    });
-  };
+  //const postComment = () => {
+  //  createComment.mutate({
+  //    comment: {
+  //      body: "This is a comment",
+  //      authorId: session?.user?.id || "",
+  //    },
+  //  });
+  //};
+  //
 
 
   const getComments = api.comments.getComments.useQuery();
@@ -39,7 +41,10 @@ const Home: NextPage = () => {
         ) : (
           <button className="border border-black px-4 mx-4" onClick={() => signIn()}>Sign In</button>
         )}
-        <button className="border border-black px-4 mx-4" onClick={() => postComment()}>Post Comment</button>
+        <div className="flex flex-col">
+          <Input className="w-full" />
+          <button className="border border-black px-4 mx-4" onClick={() => postComment()}>Post Comment</button>
+        </div>
       </div>
         {getComments.data?.map((comment) => (
           !comment.isReply &&

@@ -2,8 +2,10 @@
 import clsx from 'clsx';
 import Image from 'next/image';
 import { api } from '~/utils/api';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import { useSession } from 'next-auth/react';
+import Input from './Input';
 
 interface Comment {
   id: string;
@@ -25,11 +27,20 @@ interface CommentProps {
 const Comment = ({ className, children, comment }: CommentProps) => { 
   const router = useRouter();
   const rootClassName = clsx(className, 'flex flex-col space-y-2 p-2 border border-slate-800 rounded-md my-2 w-full');
-  const { votes, body, createdAt, authorId, isReply, id } = comment;
+  const { votes, body, createdAt, authorId, isReply } = comment;
+  let { id, parentId } = comment;
   const { data: author } = api.comments.getAuthor.useQuery(authorId);
+  const { data: session } = useSession();
 
-  const createComment = api.comments.createComment.useMutation();
+  const [typing, setTyping] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState<string>(body);
+
+  const inputRef = useRef<HTMLInputElement>(null);
+
   const vote = api.comments.voteComment.useMutation();
+  const deleteComment = api.comments.deleteComment.useMutation();
+  const editComment = api.comments.updateComment.useMutation();
   
   // Define the rating of the comment. The rating is the number of upvotes minus the number of downvotes.
   const rating = { rating: 0 };
@@ -72,47 +83,85 @@ const Comment = ({ className, children, comment }: CommentProps) => {
     router.reload();
   }
 
+  // Function "reply" simply toggles the typing state. 
+  const reply = () => {
+    setTyping(!typing);
+  }
 
-  
+  if (isReply) {
+    id = parentId;
+  }
 
-  // Create a reply comment. If the current comment is at the top level (doesn't have a parent), then the reply
-  // comment will have the current comment as its parent. If the current comment is a reply, then the reply comment
-  // will have the same parent as the current comment.
-  const postReply = (parentId: string) => () => {
-    createComment.mutate({
+  const deleteTheComment = (id: string) => {
+    deleteComment.mutate({
+      id: id,
+    });
+    router.reload();
+  }
+
+  const editTheComment = (id: string) => {
+    editComment.mutate({
       comment: {
-        body: "This is a reply",
-        authorId: author?.id,
-        parentId: parentId,
-        isReply: true,
+        id: id,
+        body: value,
       },
     });
 
     router.reload();
-  };
+  }
+
+  useEffect(() => {
+    if (editing) {
+      inputRef.current?.focus();
+    }
+  }, [editing]);
+
+
 
   return (
     <div className={rootClassName}>
-      <div className="flex space-x-20 w-full ">
-        <div className="flex space-x-20">
+      <div className="flex w-full ">
+        <div className="flex space-x-20 w-full ">
           <div className="flex flex-col items-center">
             <button className="text-sm" onClick={upvote(id)}><Image src={"/arrow-up.svg"} alt="up" width={30} height={30} /></button>
             <p>{rating.rating}</p>
             <button className="text-sm" onClick={downvote(id)}><Image src={"/arrow-down.svg"} alt="up" width={30} height={30} /></button>
           </div>
-          <div className="flex flex-col">
+          <div className="flex flex-col w-full ">
           <div className="flex items-center mx-2">
             <Image src={author?.image} width={20} alt="img" height={20} className="rounded-full" />
-            <span className="text-xs text-gray-500 mx-1">{author?.name}</span>
-            <span className="text-xs text-gray-500 mx-1">{createdAt.toLocaleDateString()}</span>
+            <span className="text-sm text-gray-500 mx-1">{author?.name}</span>
+            <span className="text-sm text-gray-500 mx-1">{createdAt.toLocaleDateString()}</span>
           </div>
-            <p className="text-sm">{body}</p>
+          {!editing ? (
+            <p>{body}</p>
+          ) : (
+          <div className="flex flex-row">
+            <input className="w-full" ref={inputRef} value={value} onChange={(e) => setValue(e.target.value)} />
+            <button className="text-sm p-2 border border-black rounded-md" onClick={() => editTheComment(comment.id)}>Update</button>
+          </div>
+          )}
           </div>
         </div>
-        <div className="flex w-full justify-end">
-        <button className="text-sm px-4 mx-4" onClick={postReply(id)}>Reply</button>
+        <div className="flex justify-center">
+          <div className="flex flex-col items-center">
+            {session?.user?.id === authorId && ( 
+            <>
+              <div className="flex flex-row">
+              <button className="text-sm py-4 mx-1" onClick={() => setEditing(!editing)}><Image src={"/edit.svg"} alt="edit" width={20} height={20} /></button>
+              <button className="text-sm py-4 mx-1" onClick={() => deleteTheComment(comment.id)}><Image src={"/trash-2.svg"} alt="delete" width={20} height={20} /></button>
+              </div>
+              <button className="text-sm px-4 mx-4" onClick={reply}>Reply</button>
+            </>
+            )}
+          </div>
         </div>
       </div>
+      {
+        typing && (
+          <Input className="w-full" isReply={true} parentId={id} /> 
+        )
+      }
       {children}
     </div>
   );
