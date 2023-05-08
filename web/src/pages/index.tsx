@@ -45,7 +45,7 @@ const Home: NextPage = () => {
       </Head>
 
 
-      <main className="flex flex-col min-h-screen mx-20  items-center justify-center" >
+      <main className="flex flex-col h-screen mx-20  overflow-y-auto scrollbar-hide" >
       <div className="flex my-2 p-4">
         <h1>Comments Section</h1>
         <button className="border border-black px-4 mx-4" onClick={() => userCreate()}>Create User</button>
@@ -81,7 +81,7 @@ const Home: NextPage = () => {
           </CommentContainer>
         ))}
         {/* */}
-
+        <div id="modal" />
 
       </main>
 

@@ -14,7 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   console.log(comment)
   const completion = await openai.createChatCompletion({
     model: "gpt-3.5-turbo",
-    messages: [{role: "user", content: `This is a comment from a message board where people discuss general things related to javscript, react, and web development. Send a response to the comment. It should be web development related. Comment: ${comment} `}],
+    messages: [{role: "user", content: `This is a comment from a message board where people discuss general things related to javscript, react, and web development. Send a response to the comment. It should be web development related. Comment: ${comment}. Do not include the word "Response" as the first word of the response. `}],
     max_tokens: 75,
   });
 

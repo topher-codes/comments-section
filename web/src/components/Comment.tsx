@@ -7,8 +7,10 @@ import { useRouter } from 'next/router';
 import { useSession } from 'next-auth/react';
 import Input from './Input';
 import type { Vote } from '@prisma/client';
-import { setTimeout } from 'timers/promises';
 import { fetchResponse } from '~/lib/api';
+import Modal from 'react-modal';
+
+Modal.setAppElement("#modal")
 
 interface Comment {
   id: string;
@@ -39,6 +41,10 @@ const Comment = ({ className, children, comment }: CommentProps) => {
   const [typing, setTyping] = useState(false);
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState<string>(body);
+  const [modalIsOpen, setIsOpen] = useState(false);
+  const openModal = () => setIsOpen(true);
+  const closeModal = () => setIsOpen(false);
+
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -106,7 +112,7 @@ const Comment = ({ className, children, comment }: CommentProps) => {
     deleteComment.mutate({
       id: id,
     });
-    router.reload();
+    router.reload()
   }
 
   const editTheComment = (id: string) => {
@@ -158,37 +164,75 @@ const Comment = ({ className, children, comment }: CommentProps) => {
   return (
     <div className={rootClassName}>
       <div className="flex w-full ">
-        <div className="flex space-x-20 w-full ">
-          <div className="flex flex-col items-center">
-            <button className="text-sm" onClick={upvote(id)}><Image src={"/arrow-up.svg"} alt="up" width={30} height={30} /></button>
+        <div className="flex md:space-x-20 w-full ">
+          <div className="flex flex-col items-center justify-center">
+            <button className="text-sm" onClick={upvote(id)}><Image src={"/arrow-up.svg"} alt="up" width={20} height={20} /></button>
             <p>{rating.rating}</p>
-            <button className="text-sm" onClick={downvote(id)}><Image src={"/arrow-down.svg"} alt="up" width={30} height={30} /></button>
+            <button className="text-sm" onClick={downvote(id)}><Image src={"/arrow-down.svg"} alt="up" width={20} height={20} /></button>
           </div>
           <div className="flex flex-col w-full ">
-          <div className="flex items-center mx-2">
-            <Image src={author?.image || ""} width={20} alt="img" height={20} className="rounded-full" />
-            <span className="text-sm text-gray-500 mx-1">{author?.name}</span>
-            <span className="text-sm text-gray-500 mx-1">{createdAt.toLocaleDateString()}</span>
-            <button className="text-sm text-gray-500 mx-1" onClick={()=>postAiComment()}>Want a reply?</button>
+            <div className="flex items-center mx-2">
+              <Image src={author?.image || ""} width={20} alt="img" height={20} className="rounded-full" />
+              <span className="text-xs md:text-sm text-gray-500 mx-1">{author?.name}</span>
+              <span className="text-xs md:text-sm text-gray-500 mx-1">{createdAt.toLocaleDateString()}</span>
+              {session?.user?.id === author?.id && (
+              <button className="text-sm text-gray-500 mx-1" onClick={()=>postAiComment()}>Lonely?</button>
+              )}
+            </div>
+            
+            {/* If the user is not editing the comment, the comment will be displayed. Otherwise, the input will be displayed */}
+            {!editing ? (
+            <>
+              <p className="text-xs md:text-base">{body}</p>
+            <div className="flex flex-col items-center md:hidden">
+            {session?.user?.id === authorId && ( 
+              <div className="flex flex-row flex-nowrap w-full">
+                <button className="text-sm py-2 mx-2" onClick={() => setEditing(!editing)}>
+                {editing ? (
+                  <>
+                  <Image src={"/edit.svg"} alt="edit" width={20} height={20} />
+                  X 
+                  </>
+                ) : (
+                <>
+                  <Image src={"/edit.svg"} alt="edit" width={20} height={20} />
+                  Edit
+                </>
+                )}
+                </button>
+                <button className="text-sm py-4 mx-1" onClick={() => deleteTheComment(comment.id)}><Image src={"/trash-2.svg"} alt="delete" width={20} height={20} />Delete</button>
+              </div>
+            )}
           </div>
-          {/* If the user is not editing the comment, the comment will be displayed. Otherwise, the input will be displayed */}
-          {!editing ? (
-            <p>{body}</p>
-          ) : (
-          <div className="flex flex-row">
-            <input className="w-full" ref={inputRef} value={value} onChange={(e) => setValue(e.target.value)} />
-            <button className="text-sm p-2 border border-black rounded-md" onClick={() => editTheComment(comment.id)}>Update</button>
-          </div>
-          )}
-          {/* */}
+          </>
+
+            ) : (
+            <div className="flex flex-row">
+              <input className="w-full" ref={inputRef} value={value} onChange={(e) => setValue(e.target.value)} />
+              <button className="text-sm p-2 border border-black rounded-md" onClick={() => editTheComment(comment.id)}>Update</button>
+            </div>
+            )}
+            {/* */}
           </div>
         </div>
-        <div className="flex justify-center">
-          <div className="flex flex-col items-center">
+        <div className="flex flex-col justify-center">
+          <div className="flex flex-col items-center hidden md:block">
             {session?.user?.id === authorId && ( 
-              <div className="flex flex-row">
-                <button className="text-sm py-4 mx-1" onClick={() => setEditing(!editing)}><Image src={"/edit.svg"} alt="edit" width={20} height={20} /></button>
-                <button className="text-sm py-4 mx-1" onClick={() => deleteTheComment(comment.id)}><Image src={"/trash-2.svg"} alt="delete" width={20} height={20} /></button>
+              <div className="flex flex-row flex-nowrap w-full">
+                <button className="text-sm py-2 mx-2" onClick={() => setEditing(!editing)}>
+                {editing ? (
+                  <>
+                  <Image src={"/edit.svg"} alt="edit" width={20} height={20} />
+                  X 
+                  </>
+                ) : (
+                <>
+                  <Image src={"/edit.svg"} alt="edit" width={20} height={20} />
+                  Edit
+                </>
+                )}
+                </button>
+                <button className="text-sm py-4 mx-1" onClick={() => openModal()}><Image src={"/trash-2.svg"} alt="delete" width={20} height={20} />Delete</button>
               </div>
             )}
               <button className="text-sm px-4 mx-4" onClick={reply}>Reply</button>
@@ -203,6 +247,18 @@ const Comment = ({ className, children, comment }: CommentProps) => {
       }
       {/* */}
       {children}
+      <Modal
+        isOpen={modalIsOpen}
+        onRequestClose={closeModal}
+        overlayClassName="bg-[rgba(0,0,0,.4)] flex justify-center items-center absolute top-0 left-0 h-screen w-screen"
+        className="w-1/3 p-8 bg-white rounded-xl"
+      >
+        <h1 className="mb-6 text-4xl text-slate-800">Delete Comment</h1>
+        <p className="mb-6 text-lg text-slate-400">Are you sure you want to delete this comment? This will remove the comment and this cannot be undone.</p>
+        <button className="text-2xl text-white bg-slate-400 rounded-md px-4 py-2" onClick={()=>closeModal()}>No, Cancel</button>
+        <button className="text-2xl text-white bg-red-800 rounded-md px-4 py-2 ml-4" onClick={()=>deleteTheComment(comment.id)}>Yes, Delete</button>
+      </Modal>
+
     </div>
   );
 };
