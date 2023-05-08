@@ -190,17 +190,16 @@ const Comment = ({ className, children, comment }: CommentProps) => {
                 <button className="text-sm py-2 mx-2" onClick={() => setEditing(!editing)}>
                 {editing ? (
                   <>
-                  <Image src={"/edit.svg"} alt="edit" width={20} height={20} />
+                  <Image src={"/edit.svg"} alt="edit" width={15} height={15} />
                   X 
                   </>
                 ) : (
                 <>
-                  <Image src={"/edit.svg"} alt="edit" width={20} height={20} />
-                  Edit
+                  <Image src={"/edit.svg"} alt="edit" width={15} height={15} />
                 </>
                 )}
                 </button>
-                <button className="text-sm py-4 mx-1" onClick={() => deleteTheComment(comment.id)}><Image src={"/trash-2.svg"} alt="delete" width={20} height={20} />Delete</button>
+                <button className="text-sm py-4 mx-1" onClick={() => openModal()}><Image src={"/trash-2.svg"} alt="delete" width={15} height={15} /></button>
               </div>
             )}
           </div>
@@ -242,7 +241,7 @@ const Comment = ({ className, children, comment }: CommentProps) => {
       {/* If the user is typing, the input will be displayed */}
       {
         typing && (
-          <Input className="w-full" isReply={true} parentId={id} /> 
+          <Input className="w-full" isReply={true} parentId={id} parentAuthorName={author?.name as string} /> 
         )
       }
       {/* */}
@@ -251,7 +250,7 @@ const Comment = ({ className, children, comment }: CommentProps) => {
         isOpen={modalIsOpen}
         onRequestClose={closeModal}
         overlayClassName="bg-[rgba(0,0,0,.4)] flex justify-center items-center absolute top-0 left-0 h-screen w-screen"
-        className="w-1/3 p-8 bg-white rounded-xl"
+        className="w-3/4 md:w-1/2 lg:w-1/3 p-8 bg-white rounded-xl"
       >
         <h1 className="mb-6 text-4xl text-slate-800">Delete Comment</h1>
         <p className="mb-6 text-lg text-slate-400">Are you sure you want to delete this comment? This will remove the comment and this cannot be undone.</p>

@@ -59,15 +59,6 @@ const Home: NextPage = () => {
         {/* */}
       </div>
 
-      {/* If the user is signed in, show the Input component so that they can post a comment */}
-      {session && (
-        <div className="flex flex-col w-full">
-          <h2 className="text-center">Post a comment</h2>
-          <div className="flex flex-row w-full">
-            <Input className="w-full" />
-          </div>
-        </div>
-      )}
 
         {/* Loop through the comments and render them. If the comment contains replies, render those as children */}
         {comments.map((comment) => (
@@ -81,6 +72,10 @@ const Home: NextPage = () => {
           </CommentContainer>
         ))}
         {/* */}
+        {/* If the user is signed in, show the Input component so that they can post a comment */}
+        {session && (
+          <Input />
+        )}
         <div id="modal" />
 
       </main>

@@ -9,9 +9,10 @@ interface InputProps {
   className?: string;
   isReply?: boolean;
   parentId?: string;
+  parentAuthorName?: string;
 }
 
-const Input = ({ className, isReply, parentId }: InputProps) => {
+const Input = ({ className, isReply, parentId, parentAuthorName }: InputProps) => {
   const rootClassName = clsx(className, 'flex space-y-2 p-4 border border-slate-800 rounded-md my-2 w-full items-center justify-between');
   // Grab the session data. We will use this to get the authorId of the comment.
   const { data: session } = useSession();
@@ -36,9 +37,13 @@ const Input = ({ className, isReply, parentId }: InputProps) => {
     if (value.length === 0) {
       return;
     }
+    let mention = value;
+    if (isReply) {
+      mention = `@${parentAuthorName} ${value}`;
+    }
     createComment.mutate({
       comment: {
-        body: value,
+        body: mention,
         authorId: session?.user?.id as string,
         isReply: isReply,
         parentId: parentId,
@@ -49,9 +54,10 @@ const Input = ({ className, isReply, parentId }: InputProps) => {
 
 
 
+
   return (
     <div className={rootClassName}> 
-      <input ref={inputRef} value={value} onChange={onChange} className="w-full h-10 border" placeholder='Write a comment, bro' />
+      <input ref={inputRef} value={value} onChange={onChange} className="w-full h-8 border text-xs" placeholder='Add a comment...' />
       {/* button should be aligned all the way to the right, or at the end of the flexbox */}
       <div className="flex-grow" />
       <button className="justify-end" onClick={() => {
