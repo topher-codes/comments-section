@@ -2,7 +2,6 @@ import {z } from 'zod';
 import {
   createTRPCRouter,
   publicProcedure,
-  protectedProcedure,
 } from "~/server/api/trpc";
 
 
@@ -14,7 +13,7 @@ export const commentsRouter = createTRPCRouter({
   createComment: publicProcedure
     .input(z.object({
       comment: z.object({
-        body: z.string().max(150),
+        body: z.string().max(500),
         authorId: z.string(),
         parentId: z.string().optional(),
         isReply: z.boolean().optional(),
@@ -37,7 +36,7 @@ export const commentsRouter = createTRPCRouter({
     .input(z.object({
       comment: z.object({
         id: z.string(),
-        body: z.string().max(150),
+        body: z.string().max(250),
       }),
     }))
     .mutation(({ ctx, input }) => {
@@ -91,7 +90,6 @@ export const commentsRouter = createTRPCRouter({
         },
       })
     }),
-
 
     getAuthor: publicProcedure
     .input(z.string())
