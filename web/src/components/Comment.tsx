@@ -7,6 +7,8 @@ import { useRouter } from 'next/router';
 import { useSession } from 'next-auth/react';
 import Input from './Input';
 import type { Vote } from '@prisma/client';
+import { setTimeout } from 'timers/promises';
+import { fetchResponse } from '~/lib/api';
 
 interface Comment {
   id: string;
@@ -125,8 +127,34 @@ const Comment = ({ className, children, comment }: CommentProps) => {
     }
   }, [editing]);
 
+  const aiUserResponse = api.users.getRandomAIUser.useQuery();
+  const { data: aiUser } = aiUserResponse;
+  console.log(aiUser);
 
+  
+  
+  const createComment = api.comments.createComment.useMutation();
+  const postAiComment = async () => {
+    if (isReply) {
+      id = parentId as string;
+    }
+    await fetchResponse(body).then((response) => {
+      createComment.mutate({
+        comment: {
+          body: response,
+          authorId: aiUser?.id as string,
+          parentId: id,
+          isReply: true,
+        },
+      });
+    })
+    .then(() => {
+      router.reload();
+    })
+  }
 
+  
+ 
   return (
     <div className={rootClassName}>
       <div className="flex w-full ">
@@ -141,6 +169,7 @@ const Comment = ({ className, children, comment }: CommentProps) => {
             <Image src={author?.image || ""} width={20} alt="img" height={20} className="rounded-full" />
             <span className="text-sm text-gray-500 mx-1">{author?.name}</span>
             <span className="text-sm text-gray-500 mx-1">{createdAt.toLocaleDateString()}</span>
+            <button className="text-sm text-gray-500 mx-1" onClick={()=>postAiComment()}>Want a reply?</button>
           </div>
           {/* If the user is not editing the comment, the comment will be displayed. Otherwise, the input will be displayed */}
           {!editing ? (
@@ -157,14 +186,12 @@ const Comment = ({ className, children, comment }: CommentProps) => {
         <div className="flex justify-center">
           <div className="flex flex-col items-center">
             {session?.user?.id === authorId && ( 
-            <>
               <div className="flex flex-row">
-              <button className="text-sm py-4 mx-1" onClick={() => setEditing(!editing)}><Image src={"/edit.svg"} alt="edit" width={20} height={20} /></button>
-              <button className="text-sm py-4 mx-1" onClick={() => deleteTheComment(comment.id)}><Image src={"/trash-2.svg"} alt="delete" width={20} height={20} /></button>
+                <button className="text-sm py-4 mx-1" onClick={() => setEditing(!editing)}><Image src={"/edit.svg"} alt="edit" width={20} height={20} /></button>
+                <button className="text-sm py-4 mx-1" onClick={() => deleteTheComment(comment.id)}><Image src={"/trash-2.svg"} alt="delete" width={20} height={20} /></button>
               </div>
-              <button className="text-sm px-4 mx-4" onClick={reply}>Reply</button>
-            </>
             )}
+              <button className="text-sm px-4 mx-4" onClick={reply}>Reply</button>
           </div>
         </div>
       </div>
