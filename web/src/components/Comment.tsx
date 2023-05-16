@@ -31,7 +31,7 @@ interface CommentProps {
 
 const Comment = ({ className, children, comment }: CommentProps) => { 
   const router = useRouter();
-  const rootClassName = clsx(className, 'flex flex-col space-y-2 p-2 border border-slate-800 rounded-md my-2 w-full');
+  const rootClassName = clsx(className, 'flex flex-col space-y-2 p-2 border border-slate-800 bg-white rounded-md my-2 w-full');
   const { votes, body, createdAt, authorId, isReply, parentId } = comment;
   let { id } = comment;
   const { data: author } = api.comments.getAuthor.useQuery(authorId);
@@ -176,7 +176,7 @@ const Comment = ({ className, children, comment }: CommentProps) => {
               <span className="text-xs md:text-sm text-gray-500 mx-1">{author?.name}</span>
               <span className="text-xs md:text-sm text-gray-500 mx-1">{createdAt.toLocaleDateString()}</span>
               {session?.user?.id === author?.id && (
-              <button className="text-sm text-gray-500 mx-1" onClick={()=>postAiComment()}>Lonely?</button>
+              <button className="text-sm text-gray-400 mx-1" onClick={()=>postAiComment()}>Want feedback?</button>
               )}
             </div>
             
@@ -234,9 +234,12 @@ const Comment = ({ className, children, comment }: CommentProps) => {
                 <button className="text-sm py-4 mx-1" onClick={() => openModal()}><Image src={"/trash-2.svg"} alt="delete" width={20} height={20} />Delete</button>
               </div>
             )}
-              <button className="text-sm px-4 mx-4" onClick={reply}>Reply</button>
           </div>
         </div>
+          {/* the reply button will show on comments that are not the logged in user's */}
+          {authorId !== session?.user?.id && (
+              <button className="text-sm px-4 mx-4" onClick={reply}>Reply</button>
+          )}
       </div>
       {/* If the user is typing, the input will be displayed */}
       {

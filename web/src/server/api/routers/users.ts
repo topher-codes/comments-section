@@ -16,6 +16,7 @@ export const usersRouter = createTRPCRouter({
       data: {
         name: input.name,
         email: input.email,
+        image: "/image-maxblagun.webp",
       },
     });
   }),
