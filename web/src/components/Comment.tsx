@@ -237,7 +237,7 @@ const Comment = ({ className, children, comment }: CommentProps) => {
           </div>
         </div>
           {/* the reply button will show on comments that are not the logged in user's */}
-          {authorId !== session?.user?.id && (
+          {(authorId !== session?.user?.id && session) && (
               <button className="text-sm px-4 mx-4" onClick={reply}>Reply</button>
           )}
       </div>

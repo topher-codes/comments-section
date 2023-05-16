@@ -45,10 +45,9 @@ const Home: NextPage = () => {
       </Head>
 
 
-      <main className="flex flex-col h-screen mx-20  overflow-y-auto scrollbar-hide" >
+      <main className="flex flex-col h-screen mx-20   overflow-y-auto scrollbar-hide" >
       <div className="flex my-2 p-4">
         <h1>Comments Section</h1>
-        <button className="border border-black px-4 mx-4" onClick={() => userCreate()}>Create User</button>
 
         {/* If the user is signed in, show the sign out button. Otherwise, show the sign in button. */}
         {session ? (

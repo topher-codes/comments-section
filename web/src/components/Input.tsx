@@ -13,7 +13,7 @@ interface InputProps {
 }
 
 const Input = ({ className, isReply, parentId, parentAuthorName }: InputProps) => {
-  const rootClassName = clsx(className, 'flex space-y-2 p-4 border border-slate-800 rounded-md my-2 w-full items-center justify-between');
+  const rootClassName = clsx(className, 'flex p-4 border border-slate-800 bg-white rounded-md my-2 w-full items-center justify-between');
   // Grab the session data. We will use this to get the authorId of the comment.
   const { data: session } = useSession();
   const [value, setValue] = useState<string>('');
@@ -60,10 +60,10 @@ const Input = ({ className, isReply, parentId, parentAuthorName }: InputProps) =
       <input ref={inputRef} value={value} onChange={onChange} className="w-full h-8 border text-xs" placeholder='Add a comment...' />
       {/* button should be aligned all the way to the right, or at the end of the flexbox */}
       <div className="flex-grow" />
-      <button className="justify-end" onClick={() => {
+      <button className="border border-slate-800 rounded-md px-2 py-1 justify-end" onClick={() => {
         sendComment();
         setValue('');
-      }}>Send</button>
+      }}>Post</button>
     </div>
 
   )
